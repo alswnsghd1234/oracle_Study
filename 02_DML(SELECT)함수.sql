@@ -45,6 +45,9 @@ FROM EMPLOYEE;
     1:앞에서부터 찾겠다.(생략시 기본값)
     -1:뒤에서부터 찾겠다.
 */
+SELECT INSTR('AAABBBCCCAA','B',-1)
+FROM DUAL;
+
 SELECT INSTR('AAABCCBBCA','B')
 FROM DUAL; -- 앞에서부터 첫번째에 위치하는 B의 위치값을 알려줌
 
@@ -125,7 +128,7 @@ FROM EMPLOYEE;
 SELECT RPAD('501010-1',14,'*')
 FROM DUAL;
 -- 앞에 8자리 추출해서 뒤에 *붙이기
-SELECT EMP_NAME,SUBSTR(EMP_NO,1,8)
+SELECT EMP_NAME,SUBSTR(EMP_NO,8,1)
 FROM EMPLOYEE;
 --SUBSTR을 이용해 추출한 8자리를 RPAD에 넣기
 SELECT RPAD(SUBSTR(EMP_NO,1,8),14,'*') AS "주번"
@@ -136,8 +139,8 @@ FROM EMPLOYEE;
     LTRIM / RTRIM
     - LTRIM/RTRIM(문자열,제거시키고자하는 문자)
     - 문자열의 왼쪽 또는 오른쪽에서 제거시키고자하는 문자들을 찾아서 제거한 나머지 문자를 반환
-    결과값은 CHARACTER 자료혀으로 나옴
-    제거시키고자 하는 문자는 생략가능(기본값 ' ' 공백삭제)
+    결과값은 CHARACTER 자료형으로 나옴
+    제거시키고자 하는 문자는 생략가능(기본값, ' ') 공백삭제
     
 */
 
@@ -171,7 +174,6 @@ SELECT TRIM(TRAILING 'A'FROM'AAAAZCSAAA')
 FROM DUAL; -- TRAILING 오른쪽에 있는것만 삭제(RTRIM과 유사)
 
 /*
-
     LOWER/UPPER/INITCAP
     -LOWER(문자열)
     :다 소문자로 변경
@@ -181,8 +183,8 @@ FROM DUAL; -- TRAILING 오른쪽에 있는것만 삭제(RTRIM과 유사)
     :각 단어의 첫글자만 대문자로 변경
     
     전부 반환타입은 CHARACTER
-
 */
+
 SELECT LOWER('HELLO WOLRD'),UPPER('hello world'),INITCAP('hello world GODD')
 FROM DUAL;
 
@@ -282,7 +284,6 @@ FROM DUAL;
     -FLOOR(버림처리하고자 하는 숫자) : 소수점아래의 수를 무조건 버림처리해주는 함수
     
     반환형은 NUMBER타입
-
 */
 
 SELECT FLOOR(123.456)
@@ -546,3 +547,197 @@ FROM EMPLOYEE;
 --보너스가 있는 사원은 보너스 있음, 보너스가 없는 사람은 보너스가 없음을 조회해보자
 SELECT EMP_NAME,BONUS,NVL2(BONUS,'보너스있음','보너스없음')
 FROM EMPLOYEE;
+
+/*
+NULLIF
+*/
+
+SELECT NULLIF('123','123')
+FROM DUAL; --NULL 반환
+
+SELECT NULLIF('123','456')
+FROM DUAL;
+
+--DECODE 선택함수 -> 자바에서 SWITCH 문과 흡수
+--CASE WHEN THEN END 구문 -> 자바에서 IF문과 흡사
+
+/*
+-DECODE(비교대상,조건값1,조건값2,결과값2,////조건값N,결과값N,결과값)
+
+*/
+
+-- 비교대상에는 컬럼명,산술연산(결과는NUMBER), 함수가 들어갈 수 있다.
+
+/*
+-- 사번,사원명,주민등록번호,주민등록번호로부터 성별 자리를 추출('1'이면 남자 '2'여자)
+*/
+SELECT EMP_ID,EMP_NAME,EMP_NO,DECODE(SUBSTR(EMP_NO,8,1),1,'남자',2,'여자') "성별"
+FROM EMPLOYEE;
+
+/*
+직원들의 급여를 인상시켜서 조회
+-
+--직급코드가 'J7'인 사원은 급여를 10% 인상해서 조회
+--직급코드가 'J6'인 사원은 급여를 10% 인상해서 조회
+--직급코드가 'J5'인 사원은 급여를 10% 인상해서 조회
+--그 외 직급코드를 가진 사원은 급여를 5% 인상해서 조회
+--사원명, 직급코드, 변경전 급여,변경후 급여
+*/
+
+SELECT EMP_NAME
+,JOB_CODE
+,SALARY
+,DECODE(JOB_CODE,'J7',(SALARY+(SALARY*0.1))
+,'J6',(SALARY*1.15),'J5',(SALARY*1.2),(SALARY*1.05))
+FROM EMPLOYEE;
+
+/*
+CASE WHEN THEN 구문
+
+-DECODE 선택함수와 비교하면 DECODE는 해당 조건검사 시 동등 비교만을 수행
+    CASE WHEN THEN 구문의 경우 특정 조건을 마음대로 제시 가능
+    
+[표현법]
+CASE WHEN 조건식1 THEN 결과값1
+    WHEN 조건식2 THEN 결과값2
+    WHEN 조건식3 THEN 결과값3
+    ...
+    ELSE 결과값
+    
+END
+-자바에서 IF ~ ELSE IF문과 같은 느낌
+IF(조건식1){
+        결과값1
+        }ELSE IF (조선깃2){
+        결과값2
+        }
+*/
+
+-- 사번,사원명,주민등록번호, 주민등록번호로부터 성별자리를 추출('1'이면 남자,'2',여자)
+
+SELECT EMP_ID 사번,
+    EMP_NAME 사원명,
+    EMP_NO 주민번호,
+    CASE WHEN SUBSTR(EMP_NO,8,1)=1 THEN '남자'
+    WHEN SUBSTR(EMP_NO,8,1)=3 THEN '남자'
+    ELSE '여자'
+    END 성별
+FROM EMPLOYEE;
+    
+
+/*
+직원들의 급여를 인상시켜서 조회
+-
+--직급코드가 'J7'인 사원은 급여를 10% 인상해서 조회
+--직급코드가 'J6'인 사원은 급여를 10% 인상해서 조회
+--직급코드가 'J5'인 사원은 급여를 10% 인상해서 조회
+--그 외 직급코드를 가진 사원은 급여를 5% 인상해서 조회
+--사원명, 직급코드, 변경전 급여,변경후 급여
+*/
+
+SELECT EMP_NAME 사원명, JOB_CODE 직급코드,SALARY "변경전 급여",
+    CASE WHEN JOB_CODE='J7' THEN SALARY*1.1
+    WHEN JOB_CODE='J6' THEN SALARY*1.15
+    WHEN JOB_CODE='J7' THEN SALARY*1.2
+    ELSE SALARY*1.05
+    END "변경 후 급여"
+FROM EMPLOYEE;
+
+/*
+
+사원명,급여,급여등급(SAL_LEVEL 사용하지말고)
+급여등급 SALARY 값이 500만원 초과일 경우 '고급'
+
+*/
+SELECT EMP_NAME 사원명, SALARY 급여,SALARY "변경전 급여",
+    CASE WHEN SALARY>5000000 THEN '고급'
+    WHEN SALARY<=5000000 AND SALARY>3500000 THEN '중급'
+    ELSE '초급'
+    END "급여 등급"
+FROM EMPLOYEE;
+
+-------------------그룹함수-----------------------
+
+--그룹함수 : 데이터들의 합(SUM),평균(AVG)
+
+/*
+N개의 값을 읽어서 1개의 결과를 반환(하나의 그룹별로 함수 실행결과 반환)
+
+1.SUM(숫자타입컬럼) : 해당 컬럼값들의 총 합계를 반환해주는 함수
+
+*/
+
+--SUM() 전체 사원들의 총 급여 합계
+SELECT SUM(SALARY)
+FROM EMPLOYEE;
+
+--부서코드가 'D5'인 사원들의 총 급여 합계
+SELECT SUM(SALARY)
+FROM EMPLOYEE
+WHERE DEPT_CODE='D5';
+
+--남자 사원들의 총 급여 합계
+SELECT SUM(SALARY)
+FROM EMPLOYEE
+WHERE SUBSTR(EMP_NO,8,1) IN '1';
+
+
+-- AVG (숫자타입컬럼) : 해당 컬럼값들의 평균을 구해서 반환
+-- 전체 사원들의 평균 급여
+SELECT AVG(SALARY)
+FROM EMPLOYEE;
+
+SELECT FLOOR(AVG(SALARY))
+FROM EMPLOYEE; --버림처리
+
+
+/*
+    COUNT(컬럼이름/DISTINCT 컬럼이름) : 조회된 행의 개수를 세서 반환
+    COUNT(*) : 조회결과에 해당하는 모든 행의 개수를 다 세서 반환
+    COUNT(컬럼이름): 제시한 해당 컬럼값이 NULL이 아닌것만 행의 개수를 세서 반환
+    COUNT(DISTINCT 컬럼이름) : 제시한 해당 컬럼값이 중복값이 있을 경우 하나로만 개수세서 반환, NULL도 X
+
+*/
+
+SELECT COUNT(*)
+FROM EMPLOYEE;
+
+-- 여자 사원수 조회
+SELECT COUNT(*)
+FROM EMPLOYEE
+WHERE SUBSTR(EMP_NO,8,1)='2';
+
+--부서배치가 된 사원 수
+SELECT COUNT(*)
+FROM EMPLOYEE
+WHERE DEPT_CODE IS NOT NULL;
+
+-- 부서배치가 된 여자사원수
+SELECT COUNT(*)
+FROM EMPLOYEE
+WHERE (SUBSTR(EMP_NO,8,1)='2') AND DEPT_CODE IS NOT NULL;
+
+-- 사수가 있는 사원 수
+SELECT COUNT(*)
+FROM EMPLOYEE
+WHERE MANAGER_ID IS NOT NULL;
+
+--현재 사원들이 속해있는 부서의 개수
+SELECT COUNT(DISTINCT DEPT_CODE)
+FROM EMPLOYEE
+WHERE DEPT_CODE IS NOT NULL;
+
+--EMPLOYEE 테이블에서 직원명, 부서코드,생년월일,나이(만)조회
+--단 생년월일은 주민번호에서 추출 후 00년 00월 00일로 출력하고
+-- 나이는 주민번호에서 출력해서 날짜 데이터로 반환한 다음 계산
+
+SELECT * FROM EMPLOYEEL;
+
+SELECT EMP_NAME 직원명,
+        DEPT_CODE 부서코드,
+        CONCAT(SUBSTR(EMP_NO,1,2),'년')||CONCAT(SUBSTR(EMP_NO,3,2),'월')||CONCAT(SUBSTR(EMP_NO,5,2),'일'),
+        EXTRACT(YEAR FROM SYSDATE) - EXTRACT(YEAR FROM TO_DATE(SUBSTR(EMP_NO,1,2),'RR')) "나이"
+FROM EMPLOYEE;
+        
+        
+        

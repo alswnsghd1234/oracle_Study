@@ -23,4 +23,7 @@ GRANT CONNECT, RESOURCE TO KH;
               모아 놓은 ROLE
               */
 
+CREATE USER KH IDENTIFIED BY KH;
+
+
             
